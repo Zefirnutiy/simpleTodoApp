@@ -2,9 +2,9 @@ package structs
 
 type User struct {
 	Id 		 int 	`json:"-"`
-	Name 	 string `json:"name"`
-	UserName string `json:"userName"`
-	Password string	`json:"password"`
+	Name 	 string `json:"name" binding:"required"`
+	UserName string `json:"userName" binding:"required"`
+	Password string	`json:"password" binding:"required"`
 }
 
 type Todo struct {
