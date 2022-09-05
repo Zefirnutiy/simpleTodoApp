@@ -27,6 +27,27 @@ func (h *Handler) singUp(c *gin.Context){
 	})
 }
 
-func (h *Handler) singIn(c *gin.Context){
+type singInInput struct {
+	UserName string `json:"userName" binding:"required"`
+	Password string	`json:"password" binding:"required"`
+}
 
+func (h *Handler) singIn(c *gin.Context){
+	var input singInInput
+
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponce(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	token, err := h.services.Authorization.GenerateToken(input.UserName, input.Password)
+
+	if err != nil {
+		newErrorResponce(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token":token,
+	})
 }
