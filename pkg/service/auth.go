@@ -4,6 +4,7 @@ import (
 	"Zefirnutiy/simpleTodoApp/pkg/repository"
 	"Zefirnutiy/simpleTodoApp/structs"
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"time"
 
@@ -57,4 +58,26 @@ func (s *AuthService) GenerateToken(userName, password string)(string, error){
 	})
 
 	return token.SignedString([]byte(singinKey))
+}
+
+func (s *AuthService) ParseToken(accesToken string)(int, error){
+	token, err := jwt.ParseWithClaims(accesToken, &tokenClaims{}, func (token *jwt.Token)(interface{}, error)  {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid singin method")
+		}
+		
+		return []byte(singinKey), nil
+	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	claims, ok := token.Claims.(*tokenClaims)
+
+	if !ok {
+		return 0, errors.New("token claims are not of type")
+	}
+
+	return claims.UserId, nil
 }
