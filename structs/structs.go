@@ -10,10 +10,10 @@ type User struct {
 }
 
 type Todo struct {
-	Id 		 	int 	`json:"id"`
-	Title 	 	string  `json:"title"`
-	Description string  `json:"description"`
-	Done 		bool	`json:"done"`
+	Id 		 	int 	`json:"id" db:"id"`
+	Title 	 	string  `json:"title" db:"title" binding:"required"`
+	Description string  `json:"description" db:"description"`
+	Done 		bool	`json:"done" db:"done"`
 }
 
 type TodoList struct {
@@ -41,6 +41,20 @@ type UpdateTodoList struct {
 
 func (i UpdateTodoList) Validate() error {
 	if i.Title == nil && i.Description == nil {
+		return errors.New("updates structure has no values")
+	}
+
+	return nil
+}
+
+type UpdateTodo struct {
+	Title 		*string `json:"title"`
+	Description *string `json:"description"`
+	Done 		*bool	`json:"done"`
+}
+
+func (i UpdateTodo) Validate() error {
+	if i.Title == nil && i.Description == nil && i.Done == nil{
 		return errors.New("updates structure has no values")
 	}
 

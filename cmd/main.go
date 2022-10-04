@@ -5,7 +5,10 @@ import (
 	"Zefirnutiy/simpleTodoApp/pkg/handler"
 	"Zefirnutiy/simpleTodoApp/pkg/repository"
 	"Zefirnutiy/simpleTodoApp/pkg/service"
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -43,8 +46,25 @@ func main(){
 	handlers := handler.NewHandler(services)
 
 	srv := new(todo.Server)
-	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil{
-		logrus.Fatalf(`Ошибка запуска сервера: %s`, err.Error())
+	go func(){
+		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil{
+			logrus.Fatalf(`Ошибка запуска сервера: %s`, err.Error())
+	}
+	}()
+	logrus.Println("TodoApp started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<- quit
+
+	logrus.Println("TodoApp Shutting Down")
+
+	if err := srv.ShutDown(context.Background()); err != nil {
+		logrus.Errorf("error occured on server shutting down: %s", err.Error())
+	}
+
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error occured on db connection close: %s", err.Error())
 	}
 }
 

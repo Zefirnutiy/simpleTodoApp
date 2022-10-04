@@ -11,9 +11,6 @@ type Authorization interface{
 	ParseToken(token string)(int, error)
 }
 
-type Todo interface{
-
-}
 
 type TodoList interface{
 	Create(userId int, list structs.TodoList)(int, error)
@@ -21,6 +18,13 @@ type TodoList interface{
 	GetListById(listId, userId int)(structs.TodoList, error)
 	DeleteList(userId, listId int)error
 	Update(userId, listId int, input structs.UpdateTodoList) error
+}
+type Todo interface{
+	Create(userId, listId int, todo structs.Todo)(int, error)
+	GetAll(userId, listId int)([]structs.Todo, error)
+	GetTodoById(todoId, userId int)(structs.Todo, error)
+	Delete(userId, todoId  int)(error)
+	Update(userId, todoId int, input structs.UpdateTodo) error
 }
 
 type Service struct{
@@ -33,5 +37,6 @@ func NewService(repos *repository.Repository) *Service {
 	return &Service{
 		Authorization: newAuthService(repos.Authorization),
 		TodoList: NewTodoListService(repos.TodoList),
+		Todo: NewTodoService(repos.Todo, repos.TodoList),
 	}
 }
